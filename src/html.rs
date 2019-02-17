@@ -108,6 +108,7 @@ pub fn tokens_to_classed_html(line: &str,
             }
         });
     }
+    write!(s, "{}", Escape(&line[cur_index..line.len()])).unwrap();
     s
 }
 
