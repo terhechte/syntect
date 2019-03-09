@@ -38,18 +38,20 @@ use std::path::Path;
 /// ```
 pub struct ClassedHTMLGenerator<'a> {
     syntax_set: &'a SyntaxSet,
+    class_prefix: Option<&'a str>,
     open_spans: usize,
     parse_state: ParseState,
     html: String
 }
 
 impl<'a> ClassedHTMLGenerator<'a> {
-    pub fn new(syntax_reference: &'a SyntaxReference, syntax_set: &'a SyntaxSet) -> ClassedHTMLGenerator<'a> {
+    pub fn new(syntax_reference: &'a SyntaxReference, syntax_set: &'a SyntaxSet, class_prefix: Option<&'a str>) -> ClassedHTMLGenerator<'a> {
         let parse_state = ParseState::new(syntax_reference);
         let open_spans = 0;
         let html = String::new();
         ClassedHTMLGenerator {
             syntax_set,
+            class_prefix,
             open_spans,
             parse_state,
             html
@@ -90,7 +92,7 @@ impl<'a> ClassedHTMLGenerator<'a> {
                 match basic_op {
                     BasicScopeStackOp::Push(scope) => {
                         s.push_str("<span class=\"");
-                        scope_to_classes(&mut s, scope, style);
+                        scope_to_classes(&mut s, scope, style, self.class_prefix);
                         s.push_str("\">");
                         self.open_spans += 1;
                     }
@@ -117,7 +119,7 @@ pub enum ClassStyle {
     Spaced,
 }
 
-fn scope_to_classes(s: &mut String, scope: Scope, style: ClassStyle) {
+fn scope_to_classes(s: &mut String, scope: Scope, style: ClassStyle, prefix: Option<&str>) {
     assert!(style == ClassStyle::Spaced); // TODO more styles
     let repo = SCOPE_REPO.lock().unwrap();
     for i in 0..(scope.len()) {
@@ -125,6 +127,9 @@ fn scope_to_classes(s: &mut String, scope: Scope, style: ClassStyle) {
         let atom_s = repo.atom_str(atom);
         if i != 0 {
             s.push_str(" ")
+        }
+        if let Some(prefix) = prefix {
+            s.push_str(prefix);
         }
         s.push_str(atom_s);
     }
@@ -197,7 +202,7 @@ pub fn tokens_to_classed_html(line: &str,
             match basic_op {
                 BasicScopeStackOp::Push(scope) => {
                     s.push_str("<span class=\"");
-                    scope_to_classes(&mut s, scope, style);
+                    scope_to_classes(&mut s, scope, style, nil);
                     s.push_str("\">");
                 }
                 BasicScopeStackOp::Pop => {
