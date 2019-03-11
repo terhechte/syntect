@@ -202,7 +202,7 @@ pub fn tokens_to_classed_html(line: &str,
             match basic_op {
                 BasicScopeStackOp::Push(scope) => {
                     s.push_str("<span class=\"");
-                    scope_to_classes(&mut s, scope, style, nil);
+                    scope_to_classes(&mut s, scope, style, None);
                     s.push_str("\">");
                 }
                 BasicScopeStackOp::Pop => {
