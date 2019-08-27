@@ -497,4 +497,12 @@ mod tests {
                    },
                     "5", Range { start: 30, end: 31 }));
     }
+
+    #[test]
+    fn test_list_languages() {
+        let ps = SyntaxSet::load_defaults_newlines();
+        for n in ps.syntaxes().iter() {
+            println!("{}", &n.name);
+        }
+    }
 }
